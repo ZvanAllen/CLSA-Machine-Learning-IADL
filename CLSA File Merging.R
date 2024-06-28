@@ -1840,61 +1840,7 @@ write.csv(CLSA.baseline.FU2, "CLSA.basleine.followup2.csv")
 CLSA.baseline.FU2<- read.csv("CLSA.basleine.followup2.csv")
 CLSA.baseline.FU2<-CLSA.baseline.FU2%>%as_tibble()
 
-#### 8.0 Select variables for modelling with a filter approach ####
 
-# Load necessary libraries
-library(broom)
-
-# Identify character variables
-character_vars <- sapply(CLSA.baseline.FU2, is.character)
-# Names of character variables
-character_var_names <- names(CLSA.baseline.FU2)[character_vars]
-# Remove character variables (5)
-data_without_chars <- CLSA.baseline.FU2[, !names(CLSA.baseline.FU2) %in% character_var_names] %>% as_tibble()
-
-# Filter out non-numeric predictors
-numeric_predictors <- data_without_chars%>%
-  select(-c("ADL_DSUM.y", "ADL_DCLS.y")) %>%
-  keep(is.numeric) %>%
-  names()
-
-# Function to calculate correlation and tidy the result
-calculate_correlation <- function(predictor, target) {
-  cor.test(data_without_chars[[predictor]], data_without_chars[[target]], method = "pearson") %>%
-    tidy() %>%
-    select(estimate, p.value)
-}
-
-# Prepare the table
-correlation_table <- map_df(numeric_predictors, function(predictor) {
-  cor_ADL_DSUM_FU2 <- calculate_correlation(predictor, "ADL_DSUM.y")
-  cor_ADL_DCLS_FU2 <- calculate_correlation(predictor, "ADL_DCLS.y")
-  
-  data.frame(
-    Predictor = predictor,
-    ADL_DSUM_FU2_Cor = cor_ADL_DSUM_FU2$estimate,
-    ADL_DSUM_FU2_p = cor_ADL_DSUM_FU2$p.value,
-    ADL_DCLS_FU2_Cor = cor_ADL_DCLS_FU2$estimate,
-    ADL_DCLS_FU2_p = cor_ADL_DCLS_FU2$p.value
-  )
-})
-
-write.csv(correlation_table, "Predictor.Outcome.Correlations.CSV")
-
-# Function to create a dataset with 3 columns (each baseline variable in dataset, bi-variate correlation
-# with follow-up 3 ADL, IADL)
-# use cor_auto to automatically pick the appropriate correlation type
-# identify top x variables and inspect (reduction strategies is necessary)
-
-
-
-
-
-# look for multi-collinearity and redundancy in variable set
-
-# dimensionality reduction if necessary
-
-# 9.0 Split training and test data 
 
 
 
